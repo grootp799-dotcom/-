@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ขอโทษนะ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@500;700&family=Noto+Sans+Thai:wght@400;500&display=swap">
+<style>
+:root{--bg:#f7eef3;--ink:#3b2740;--soft:#7a6180;--card:#fffafc;--line:#e6cfdc;--acc:#c2467a;--accink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1726;--ink:#f3e6ee;--soft:#b49bb9;--card:#2a2033;--line:#43344d;--acc:#f08ab4;--accink:#2a1230;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1f1726;--ink:#f3e6ee;--soft:#b49bb9;--card:#2a2033;--line:#43344d;--acc:#f08ab4;--accink:#2a1230;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:400 17px/1.8 "Noto Sans Thai",system-ui,sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:30rem;padding:2rem 1.5rem 3rem;display:flex;flex-direction:column;min-height:100vh}
+.dots{display:flex;gap:.4rem;margin-bottom:auto}
+.dots i{height:.35rem;flex:1;border-radius:1rem;background:var(--line);transition:background .3s}
+.dots i.on{background:var(--acc)}
+#stage{margin:15vh 0 2rem;animation:in .5s ease both}
+@keyframes in{from{opacity:0;transform:translateY(.6rem)}to{opacity:1;transform:none}}
+h1{font:700 2.1rem/1.4 Mali,"Noto Sans Thai",sans-serif;margin:0 0 1rem;letter-spacing:.01em}
+p{margin:0 0 1rem;color:var(--soft)}
+ul{margin:0 0 1rem;padding:0;list-style:none}
+li{padding:.7rem 1rem;border:1px solid var(--line);border-radius:.9rem;background:var(--card);margin-bottom:.6rem}
+.opts{display:grid;gap:.6rem;margin:1.2rem 0}
+button{font:500 1rem/1.5 "Noto Sans Thai",sans-serif;cursor:pointer;border-radius:.9rem;padding:.85rem 1.1rem;border:1.5px solid var(--line);background:var(--card);color:var(--ink);text-align:left}
+button.go{background:var(--acc);border-color:var(--acc);color:var(--accink);text-align:center;width:100%}
+button.sel{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.note{border-left:3px solid var(--acc);padding-left:1rem;color:var(--ink)}
+textarea{width:100%;min-height:5rem;margin-top:.8rem;font:inherit;padding:.7rem;border-radius:.7rem;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.heart{position:fixed;bottom:-2rem;font-size:1.6rem;animation:up 3.2s ease-in forwards;pointer-events:none}
+@keyframes up{to{transform:translateY(-110vh) rotate(18deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){#stage{animation:none}.heart{display:none}}
+</style>
+</head>
+<body>
+<main>
+<div class="dots" id="dots" aria-hidden="true"></div>
+<section id="stage" aria-live="polite"></section>
+<div id="ctl"></div>
+</main>
+<script>
+// แก้ชื่อตรงนี้ได้
+var NAME = "บี้";
+var pick = "", answer = "", i = 0;
+var S = [
+ {h:"ขอโทษนะ" + NAME, p:["ไม่ต้องรีบตอบอะไรเลย","อ่านตอนที่พร้อมก็พอ เค้าตั้งใจเขียนหน้านี้ให้เธอคนเดียว"], b:"อ่านต่อ"},
+ {h:"เค้าเสียใจจริง ๆ", p:["ที่ทำให้เธอรู้สึกไม่ดีและเสียใจ","เค้าไม่ได้อยากให้เรื่องนี้เกิดขึ้นกับเธอเลย"], b:"ต่อไป"},
+ {h:"เค้ารู้ตัวแล้วนะ", p:["เค้ารู้ตัวแล้วคั้บว่าตอนที่เค้ารีบทำเซอร์ไพรส์จนทำให้เธอโดนคุณแม่ด่าว่ามาสาย แถมเค้ายังไปรีดเค้นบังคับให้เธอต้องมาโทรคุย และเผลอใช้อารมณ์ร้อนใส่เธอตอนที่เธอเหนื่อยๆ","~ตอนนั้นเธอคงรู้สึกอึดอัด อับอาย กดดัน และรู้สึกเหมือนตัวเองไม่ถูกให้ความสำคัญเลยใช่ไหมคั้บ","เค้าขอโทษจากใจจริงนะ" + NAME], b:"ต่อไป"},
+ {h:"เรื่องนี้เป็นความผิดของเค้า", p:["เค้าไม่มีข้ออ้าง ต่อให้ไม่ได้ตั้งใจ ผลที่เกิดกับเธอก็เป็นเรื่องจริง","และเค้าขอรับผิดชอบมัน"], b:"ต่อไป"},
+ {h:"ไม่ใช่เพราะเค้าไม่แคร์", p:["ที่เค้าหลุดทำแบบนั้นไปในตอนแรก เพราะเค้าจัดการอารมณ์ตัวเองไม่ดี","ไม่ได้เป็นเพราะเค้าไม่รักหรือไม่แคร์ความรู้สึกของเธอเลยนะ"], b:"ต่อไป"},
+ {h:"ครั้งต่อไปเค้าจะทำให้ต่างจากนี้", list:["ฟังเธอให้จบก่อนจะตอบ","คิดก่อนว่าเธอจะรู้สึกอย่างไรกับสิ่งที่เค้าทำ","ถ้าพลาดอีก เค้าจะเป็นฝ่ายเข้ามาคุยก่อน"], b:"ต่อไป"},
+ {h:"ถ้าอยากเล่า เค้าพร้อมฟัง", p:["หลังจากนี้ไม่ว่าเธอจะรู้สึกยังไง หรือมีอะไรที่อึดอัดใจอยู่ ทุกครั้งที่เธออยากเล่า เค้าพร้อมจะนั่งฟังเธอเงียบ ๆ เลยนะคั้บ","สัญญาว่าจะตั้งใจฟังด้วยความเข้าใจ โดยไม่เถียง ไม่ขัด และไม่พยายามหาข้อแก้ตัวใดๆ เลยคั้บ เอาความสบายใจของเธอเป็นที่ตั้งเลยน้า"], b:"ต่อไป"},
+ {h:"ให้เค้าชดเชยแบบที่เธออยากได้", p:["เลือกสิ่งที่ช่วยให้เธอรู้สึกดีขึ้นที่สุดตอนนี้"], opts:["ให้เวลาฉันอยู่คนเดียวก่อน","อยากให้โทรหา แล้วคุยกัน","อยากให้ไปกินข้าวด้วยกัน","อยากให้อยู่ข้าง ๆ เฉย ๆ"], b:"ต่อไป", need:1},
+ {h:"เธอสำคัญกับเค้ามาก", p:["สำหรับเค้าแล้ว การมีเธออยู่ข้างๆ คือสิ่งที่มีค่าและสำคัญที่สุดในชีวิตเลยคั้บ","เค้าอยากให้เธอรู้ไว้ว่าเธอมีค่ามากแค่ไหนน้า เอาที่เธอสบายใจที่สุดเลยนะ"], b:"ต่อไป"},
+ {h:"ขอโอกาสแก้ตัวนะ", p:["ไม่ได้บังคับให้ตอบวันนี้","เลือกตามที่ใจเธอรู้สึกจริง ๆ ข้อไหนก็ได้"], opts:["ขอเวลาอีกหน่อย","ใจอ่อนแล้ว"], fin:1}
+];
+var R = {"ขอเวลาอีกหน่อย":"ได้เลย เค้ารอได้ ไม่เร่ง และจะไม่กดดันเธอ พร้อมเมื่อไหร่ค่อยบอกนะ",
+ "ใจอ่อนแล้ว":"ขอบคุณที่ให้โอกาสนะ เค้าจะพิสูจน์ด้วยการกระทำ ไม่ใช่แค่คำพูด"};
+var $ = function(id){return document.getElementById(id)};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function render(){
+ var s=S[i], st=$("stage"), ct=$("ctl"), d=$("dots");
+ d.textContent="";S.forEach(function(_,k){d.appendChild(el("i",k<=i?"on":""))});
+ st.style.animation="none";void st.offsetWidth;st.style.animation="";st.textContent="";ct.textContent="";
+ st.appendChild(el("h1","",s.h));
+ (s.p||[]).forEach(function(t){var n=t.charAt(0)==="~";st.appendChild(el("p",n?"note":"",n?t.slice(1):t))});
+ if(s.list){var u=el("ul");s.list.forEach(function(t){u.appendChild(el("li","",t))});st.appendChild(u)}
+ var go=el("button","go",s.b||"");
+ if(s.opts){
+  var o=el("div","opts");
+  s.opts.forEach(function(t){var b=el("button","",t);
+   b.onclick=function(){
+    if(s.fin){answer=t;done(t)}else{pick=t;[].forEach.call(o.children,function(c){c.classList.remove("sel")});b.classList.add("sel");go.disabled=false}};
+   o.appendChild(b)});
+  st.appendChild(o);
+ }
+ if(s.b){if(s.need)go.disabled=true;go.onclick=function(){i++;render()};ct.appendChild(go)}
+}
+function done(t){
+ var st=$("stage"),ct=$("ctl");
+ st.textContent="";ct.textContent="";
+ st.appendChild(el("h1","",t==="ใจอ่อนแล้ว"?"ขอบคุณนะ" + NAME:"เค้าเข้าใจ"));
+ st.appendChild(el("p","note",R[t]));
+ var msg="คำตอบของเรา: "+(pick?"อยากให้ "+pick.replace(/^อยากให้/,"").trim()+" / ":"")+t;
+ var b=el("button","go","กดเพื่อส่งคำตอบให้เขา");
+ b.onclick=function(){send(msg,st)};
+ ct.appendChild(el("p","","กดปุ่มนี้ครั้งเดียว ระบบจะคัดลอกหรือเปิดหน้าแชร์คำตอบให้เอง"));
+ ct.appendChild(b);
+ if(t==="ใจอ่อนแล้ว")hearts();
+}
+function send(msg,st){
+ function fallback(){var ta=el("textarea");ta.value=msg;ta.readOnly=true;st.appendChild(ta);ta.select()}
+ try{
+  if(navigator.share){navigator.share({text:msg}).catch(fallback)}
+  else if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){st.appendChild(el("p","","คัดลอกข้อความแล้ว วางส่งให้เขาได้เลย"))},fallback)}
+  else fallback();
+ }catch(e){fallback()}
+}
+function hearts(){
+ for(var k=0;k<14;k++){var h=el("span","heart","💗");h.style.left=(Math.random()*92)+"%";h.style.animationDelay=(Math.random()*1.2)+"s";document.body.appendChild(h);setTimeout(function(x){x.remove()},5000,h)}
+}
+render();
+</script>
+</body>
+</html>
